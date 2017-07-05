@@ -12,14 +12,24 @@ namespace TaskZilla.Persistence
         {
         }
 
+        public virtual DbSet<AspNetUser> AspNetUsers { get; set; }
         public virtual DbSet<Priority> Priorities { get; set; }
         public virtual DbSet<Task> Tasks { get; set; }
-        public virtual DbSet<AspNetUser> Users { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<AspNetUser>()
+                .HasMany(e => e.Tasks)
+                .WithRequired(e => e.AspNetUser)
+                .HasForeignKey(e => e.AssignedToUserId)
+                .WillCascadeOnDelete(false);
+
+            modelBuilder.Entity<Priority>()
+                .HasMany(e => e.Tasks)
+                .WithRequired(e => e.Priority)
+                .WillCascadeOnDelete(false);
         }
 
-        
+        public System.Data.Entity.DbSet<TaskZilla.Models.TaskDTO> TaskDTOes { get; set; }
     }
 }

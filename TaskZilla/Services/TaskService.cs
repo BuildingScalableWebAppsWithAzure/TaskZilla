@@ -45,7 +45,9 @@ namespace TaskZilla.Services
                 Description = t.Description,
                 EstDurationInHours = t.EstDurationInHours,
                 AssignedToUserId = t.AssignedToUserId,
-                PriorityId = t.PriorityId
+                PriorityId = t.PriorityId,
+                PriorityLabel = t.Priority.Priority1,
+                AssignedToLabel = t.AspNetUser.UserName
             };
             return taskDto; 
         }
@@ -57,13 +59,24 @@ namespace TaskZilla.Services
         public async System.Threading.Tasks.Task<List<UserDTO>> GetUsers()
         {
             //we'll use a projection since we don't need to retrieve fields such as password...
-            var users = await _identityContext.Users.Select(p => new { Id = p.Id, UserName = p.UserName }).ToListAsync();
+            var users = await _context.AspNetUsers.Select(p => new { Id = p.Id, UserName = p.UserName }).ToListAsync();
             List<UserDTO> userDTOs = new List<UserDTO>(); 
             foreach (var u in users)
             {
                 userDTOs.Add(new UserDTO(u.Id, u.UserName));
             }
             return userDTOs; 
+        }
+
+        public async System.Threading.Tasks.Task UpdateTask(TaskDTO task)
+        {
+            var taskToUpdate = await _context.Tasks.FindAsync(task.Id);
+            taskToUpdate.Name = task.Name;
+            taskToUpdate.Description = task.Description;
+            taskToUpdate.PriorityId = task.PriorityId;
+            taskToUpdate.AssignedToUserId = task.AssignedToUserId;
+            taskToUpdate.EstDurationInHours = task.EstDurationInHours;
+            await _context.SaveChangesAsync(); 
         }
 
         /// <summary>
@@ -73,7 +86,7 @@ namespace TaskZilla.Services
         public async System.Threading.Tasks.Task<List<TaskDTO>> GetAllTasksAsync()
         {
             var tasks = await (from t in _context.Tasks join p in _context.Priorities on t.PriorityId equals p.Id
-                               join u in _context.Users on t.AssignedToUserId equals u.Id 
+                               join u in _context.AspNetUsers on t.AssignedToUserId equals u.Id 
                                select new { Priority = p, Task = t, User = u }).ToListAsync();
             List<TaskDTO> taskDTOs = new List<TaskDTO>(); 
             foreach (var t in tasks)
@@ -109,6 +122,13 @@ namespace TaskZilla.Services
                 EstDurationInHours = newTaskDTO.EstDurationInHours
             }; 
             _context.Tasks.Add(newTask);
+            await _context.SaveChangesAsync(); 
+        }
+
+        public async System.Threading.Tasks.Task DeleteTask(int id)
+        {
+            Task taskToDelete = await _context.Tasks.FindAsync(id);
+            _context.Tasks.Remove(taskToDelete);
             await _context.SaveChangesAsync(); 
         }
     }

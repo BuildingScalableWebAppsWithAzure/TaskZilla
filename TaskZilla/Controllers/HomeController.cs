@@ -37,7 +37,7 @@ namespace TaskZilla.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<ActionResult> CreateTask()
+        public async Task<ActionResult> Create()
         {
             List<PriorityDTO> allPriorities = await _taskService.GetPriorities();
             List<UserDTO> allUsers = await _taskService.GetUsers();
@@ -45,6 +45,29 @@ namespace TaskZilla.Controllers
             task.Priorities = allPriorities;
             task.Users = allUsers; 
             return View(task); 
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Create(TaskDTO taskToCreate)
+        {
+            try
+            {
+                await _taskService.CreateTask(taskToCreate);
+                taskToCreate.Result = OpResult.Success;
+            }
+            catch (Exception ex)
+            {
+                taskToCreate.Result = OpResult.Exception;
+                taskToCreate.ErrorMessage = ex.Message;
+            }
+            return View(taskToCreate);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> Details(int id)
+        {
+            TaskDTO task = await _taskService.GetTaskById(id);
+            return View(task);
         }
 
         [HttpGet]
@@ -58,22 +81,28 @@ namespace TaskZilla.Controllers
             return View(task);
         }
 
-       
-
         [HttpPost]
-        public async Task<ActionResult> CreateTask(TaskDTO taskToCreate)
+        public async Task<ActionResult> Edit(TaskDTO task)
         {
             try
             {
-                await _taskService.CreateTask(taskToCreate);
-                taskToCreate.Result = OpResult.Success; 
+                await _taskService.UpdateTask(task);
+                task.Result = OpResult.Success; 
             }
             catch (Exception ex)
             {
-                taskToCreate.Result = OpResult.Exception;
-                taskToCreate.ErrorMessage = ex.Message; 
+                task.Result = OpResult.Exception;
+                task.ErrorMessage = ex.Message; 
             }
-            return View(taskToCreate); 
+            return View(task);
         }
+
+        public async Task<ActionResult> Delete(int id)
+        {
+            await _taskService.DeleteTask(id);
+            return View();
+        }
+
+       
     }
 }
