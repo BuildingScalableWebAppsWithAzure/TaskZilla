@@ -8,15 +8,23 @@ using System.Data.Entity;
 
 namespace TaskZilla.Services
 {
+    /// <summary>
+    /// This is our "business logic" layer. It is responsible for working with EF
+    /// to handle CRUD operations and translate results into viewmodels for consumption
+    /// by our controllers. 
+    /// </summary>
     public class TaskService
     {
         private TaskZillaContext _context;
-        private ApplicationDbContext _identityContext; 
 
+        /// <summary>
+        /// Constructor. Note that in a production app, we'd inject dependencies such as 
+        /// the TaskZillaContext into this constructor using a dependency injection
+        /// framework like Autofac
+        /// </summary>
         public TaskService()
         {
             _context = new TaskZillaContext();
-            _identityContext = new ApplicationDbContext(); 
         }
 
         /// <summary>
@@ -68,6 +76,9 @@ namespace TaskZilla.Services
             return userDTOs; 
         }
 
+        /// <summary>
+        /// Updates a task in the database. 
+        /// </summary>
         public async System.Threading.Tasks.Task UpdateTask(TaskDTO task)
         {
             var taskToUpdate = await _context.Tasks.FindAsync(task.Id);
@@ -80,7 +91,8 @@ namespace TaskZilla.Services
         }
 
         /// <summary>
-        /// returns all tasks in the system. We will join tasks to priorities. 
+        /// returns all tasks in the system. This demonstrates an inner join between
+        /// Tasks, Priorities, and AspNetUsers. 
         /// </summary>
         /// <returns></returns>
         public async System.Threading.Tasks.Task<List<TaskDTO>> GetAllTasksAsync()
@@ -110,7 +122,6 @@ namespace TaskZilla.Services
         /// Adds a new task to the database. 
         /// </summary>
         /// <param name="newTask">The task to add</param>
-        /// <returns></returns>
         public async System.Threading.Tasks.Task CreateTask(TaskDTO newTaskDTO)
         {
             Task newTask = new Task
@@ -125,6 +136,9 @@ namespace TaskZilla.Services
             await _context.SaveChangesAsync(); 
         }
 
+        /// <summary>
+        /// Removes a task from the database. 
+        /// </summary>
         public async System.Threading.Tasks.Task DeleteTask(int id)
         {
             Task taskToDelete = await _context.Tasks.FindAsync(id);
@@ -133,6 +147,9 @@ namespace TaskZilla.Services
         }
     }
 
+    /// <summary>
+    /// Contains helper methods to copy EF Models into ViewModels. 
+    /// </summary>
     public class DTOHelpers
     {
         public static List<PriorityDTO> CopyPriorities(List<Priority> priorities)
@@ -141,34 +158,6 @@ namespace TaskZilla.Services
             foreach (Priority p in priorities)
             {
                 dtos.Add(new PriorityDTO(p.Id, p.Priority1));
-            }
-            return dtos; 
-        }
-
-        public static List<UserDTO> CopyUsers(List<ApplicationUser> users)
-        {
-            List<UserDTO> dtos = new List<UserDTO>();
-            foreach (ApplicationUser u in users)
-            {
-                dtos.Add(new UserDTO(u.Id, u.UserName));
-            }
-            return dtos;
-        }
-
-        public static List<TaskDTO> CopyTasks(List<Task> tasks)
-        {
-            List<TaskDTO> dtos = new List<TaskDTO>();
-            foreach (Task t in tasks)
-            {
-                dtos.Add(new TaskDTO
-                {
-                    Id = t.Id, 
-                    Name = t.Name, 
-                    Description = t.Description, 
-                    AssignedToUserId = t.AssignedToUserId, 
-                    PriorityId = t.PriorityId, 
-                    EstDurationInHours = t.EstDurationInHours
-                });
             }
             return dtos; 
         }
