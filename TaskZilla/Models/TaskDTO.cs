@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace TaskZilla.Models
@@ -9,6 +6,7 @@ namespace TaskZilla.Models
     /// <summary>
     /// Transports information about a task and 
     /// </summary>
+    
     public class TaskDTO : BaseDTO
     {
         public int Id { get; set; }

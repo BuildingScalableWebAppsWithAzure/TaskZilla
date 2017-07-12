@@ -29,7 +29,5 @@ namespace TaskZilla.Persistence
                 .WithRequired(e => e.Priority)
                 .WillCascadeOnDelete(false);
         }
-
-        public System.Data.Entity.DbSet<TaskZilla.Models.TaskDTO> TaskDTOes { get; set; }
     }
 }
